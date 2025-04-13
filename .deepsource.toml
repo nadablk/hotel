@@ -1,0 +1,8 @@
+version = 1
+
+[[analyzers]]
+name = "java"
+enabled = true
+
+[analyzers.meta]
+target = "src"  # or change to the directory where your Java source code lives
