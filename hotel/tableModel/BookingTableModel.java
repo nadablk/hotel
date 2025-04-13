@@ -81,62 +81,68 @@ public class BookingTableModel extends AbstractTableModel {
     }
 
     public void fetchDataFromDB(long start, long end) {
+        RoomDb roomDb = new RoomDb();
+        DatabaseOperation dbOperation = new DatabaseOperation();
 
         try {
-            int rows = new RoomDb().getNoOfRooms();
-
+            int rows = roomDb.getNoOfRooms();
             data = new Object[rows][11];
-            for(int i=0;i<rows;i++)
-            {
-                for(int j=0;j<data[0].length;j++)
-                {
-                    data[i][j]= "";
-                }
-            }
-            ResultSet result;
-            ResultSet roomNames;
-            roomNames = new RoomDb().getAllRoomNames();
+            initializeDataArray(data);
 
-            for (int i = 0; i < rows; i++) {
-                if (roomNames.next()) {
-                    String roomName = roomNames.getString("room_no");
-                    data[i][0] = roomName;
-                    result = new DatabaseOperation().getBookingInfo(start, end, roomName);
-                    while (result.next()) {
-                        System.out.println("coming here for " + roomName);
-                        long check_in = Long.parseLong(result.getString("check_in"));
-                        long check_out = Long.parseLong(result.getString("check_out"));
-                        System.out.println("check in  " + new Date(check_in*1000).toString() + " .... check out   "+ new Date(check_out*1000).toString());
-                        if(check_in<= (start) && ( check_out == 0 || check_out<= end))
-                        {
-                            System.out.println("first LOOP " + roomName);
-                            data[i][1] = "<<";
-                                
-                        }
-                        else if(check_in > start &&  check_out< end)
-                                {
-                                    int checkIn = Integer.parseInt(new SimpleDateFormat("d").format(new Date(check_in*1000)));
-                                    int checkOut = Integer.parseInt(new SimpleDateFormat("d").format(new Date(check_out*1000)));
-                                    int getToday =   Integer.parseInt(new SimpleDateFormat("d").format(new Date(start*1000)));
-                                    System.out.println("xxxxxxxxx "+ getToday+"........ "+ checkIn);
-                                    data[i][(checkIn-getToday)+1] = ">";
-                                    data[i][(checkOut-getToday)+1] = "<";
-                                }
-                        
-                        else if(check_in<= end && ( check_out == 0 || check_out > end))
-                        {
-                            int xx = Integer.parseInt(new SimpleDateFormat("d").format(new Date(check_in*1000))); 
-                            int getToday =  Integer.parseInt(new SimpleDateFormat("d").format(new Date(start*1000)));
-                            System.out.println("..... "+getToday+ " ...........  "+xx);
-                            data[i][(xx-getToday)+1] =">>";
-                        }
-                    }
+            ResultSet roomNames = roomDb.getAllRoomNames();
+
+            for (int i = 0; i < rows && roomNames.next(); i++) {
+                String roomName = roomNames.getString("room_no");
+                data[i][0] = roomName;
+
+                ResultSet result = dbOperation.getBookingInfo(start, end, roomName);
+
+                while (result.next()) {
+                    long checkIn = Long.parseLong(result.getString("check_in"));
+                    long checkOut = Long.parseLong(result.getString("check_out"));
+
+                    handleBookingLogic(data, i, checkIn, checkOut, start, end);
                 }
             }
 
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "from Booking table model class\n " + ex.toString());
+            JOptionPane.showMessageDialog(null, "From Booking table model class\n" + ex.toString());
+        }
+    }
+
+    // Initialize the data array with empty strings
+    private void initializeDataArray(Object[][] data) {
+        for (int i = 0; i < data.length; i++) {
+            Arrays.fill(data[i], "");
+        }
+    }
+
+    // Handle the logic of populating data array based on check-in/out times
+    private void handleBookingLogic(Object[][] data, int row, long checkIn, long checkOut, long start, long end) {
+        int dayStart = getDay(start);
+        int checkInDay = getDay(checkIn);
+        int checkOutDay = checkOut != 0 ? getDay(checkOut) : 0;
+
+        // Case 1: Booking started before or at start and ends within or open
+        if (checkIn <= start && (checkOut == 0 || checkOut <= end)) {
+            data[row][1] = "<<";
         }
 
+        // Case 2: Booking starts and ends within the range
+        else if (checkIn > start && checkOut < end) {
+            data[row][(checkInDay - dayStart) + 1] = ">";
+            data[row][(checkOutDay - dayStart) + 1] = "<";
+        }
+
+        // Case 3: Booking started before end and ends after or is still ongoing
+        else if (checkIn <= end && (checkOut == 0 || checkOut > end)) {
+            data[row][(checkInDay - dayStart) + 1] = ">>";
+        }
     }
+
+    // Helper to extract day-of-month from Unix timestamp (in seconds)
+    private int getDay(long unixTimeInSeconds) {
+        return Integer.parseInt(new SimpleDateFormat("d").format(new Date(unixTimeInSeconds * 1000)));
+    }
+
 }

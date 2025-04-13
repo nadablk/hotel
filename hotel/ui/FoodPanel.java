@@ -259,18 +259,7 @@ public class FoodPanel extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_tf_food_priceKeyTyped
 
-    private void clearAllFields()
-    {
-        food  = new Food();
-        tfFoodId.setText("");
-        tfFoodName.setText("");
-        tfFoodPrice.setText("");
-        tableFood.clearSelection();
-        btnAdd.setEnabled(true);
-        btnEdit.setEnabled(false);
-        btnDelete.setEnabled(false);
-        
-    }
+
     
     private void displayToTextFields(int row)
     {

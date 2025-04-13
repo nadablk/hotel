@@ -49,86 +49,111 @@ public class OrderPanel extends javax.swing.JDialog {
         populateItemTable();
         AutoCompleteDecorator.decorate(comboBooking);
     }
-    
-    public void searchHelper()
-    {
-         final DefaultComboBoxModel model = new DefaultComboBoxModel(bookingList);
+
+    // Method to set up auto-suggestion and selection handling for the booking combo box
+    public void searchHelper() {
+        // Create a DefaultComboBoxModel using the bookingList and assign it to the comboBooking
+        final DefaultComboBoxModel model = new DefaultComboBoxModel(bookingList);
         comboBooking.setModel(model);
-        
-        
+
+        // Get the text component used to edit combo box entries
         JTextComponent editor = (JTextComponent) comboBooking.getEditor().getEditorComponent();
+
+        // Add a key listener to respond to key events within the combo box editor
         editor.addKeyListener(new KeyAdapter() {
 
             @Override
-            public void keyTyped(KeyEvent evt)
-            {
-               
-                if(evt.getKeyChar() == KeyEvent.VK_ENTER)
-                {
+            public void keyTyped(KeyEvent evt) {
+
+                // Handle action when the ENTER key is pressed
+                if (evt.getKeyChar() == KeyEvent.VK_ENTER) {
+                    // Get the selected or typed item from the combo box
                     String details = (String) comboBooking.getSelectedItem();
-                    //System.out.println(details);
-                    if(!details.contains(","))
-                    {
-                        JOptionPane.showMessageDialog(null, "no booking found, try adding a new booking");
+
+                    // Check if the selected item has expected format (contains commas)
+                    if (!details.contains(",")) {
+                        // If not properly formatted, show a message to the user
+                        JOptionPane.showMessageDialog(null, "No booking found, try adding a new booking");
+                    } else {
+                        // Extract the booking ID (last value after the last comma)
+                        int bookinId = Integer.parseInt(details.substring(details.lastIndexOf(",") + 1));
+
+                        // Set the booking ID in the corresponding text field
+                        tfBookingId.setText(bookinId + "");
+                        // No need for further validation as the string format guarantees a valid booking ID
                     }
-                    else
-                    {
-                        int bookinId = Integer.parseInt(details.substring(details.lastIndexOf(",")+1));
-                        tfBookingId.setText(bookinId+"");
-                        // A if condition should be here, but not required as the last line has no chance of returning -1.
-                        
-                    }
-                    
                 }
-                
-                
-                
-                /// suggestion generation
-                
-                 String value = "";
+
+                // --- Suggestion generation based on what the user types ---
+                String value = "";
                 try {
+                    // Get the current text from the combo box editor
                     value = comboBooking.getEditor().getItem().toString();
-                       // System.out.println(value +" <<<<<<<<<<<<<");
-
+                    // System.out.println(value +" <<<<<<<<<<<<<"); // Debugging line
                 } catch (Exception ex) {
+                    // Silent catch — can log the error if needed
                 }
-                if (value.length() >= 2) {
 
-                   // System.out.println("working");
+                // If the user has typed at least 2 characters, fetch matching booking suggestions
+                if (value.length() >= 2) {
+                    // Fetch and update combo box suggestions with relevant bookings
                     bookingComboFill(db.bookingsReadyForOrder(value));
+
+                    // Clear database cache after use
                     db.flushAll();
                 }
-
             }
         });
     }
-    
-    public void bookingComboFill(ResultSet result)
-    {
+
+
+    // Method to fill the booking comboBox list with booking details from a ResultSet
+    public void bookingComboFill(ResultSet result) {
+        // Clear the existing items from the booking list to avoid duplicates
         bookingList.clear();
+
         try {
-            
+            // Loop through each row in the ResultSet
             while (result.next()) {
-                bookingList.add(result.getString("booking_room") + ", " + result.getString("name") + "," + result.getString("booking_id"));
+                // Format each booking entry as: "Room Name, Guest Name, Booking ID"
+                String bookingEntry = result.getString("booking_room") + ", "
+                        + result.getString("name") + ","
+                        + result.getString("booking_id");
+
+                // Add the formatted string to the booking list
+                bookingList.add(bookingEntry);
             }
         } catch (SQLException ex) {
+            // Show an error message if something goes wrong while processing the ResultSet
             JOptionPane.showMessageDialog(null, "bookingCombo fill error");
         }
-
     }
-    
-     private void populateFoodTable() {
+
+
+    // Method to populate the food table with data from the food database
+    private void populateFoodTable() {
+        // Fetch the list of foods from the food database
         result = foodDb.getFoods();
+
+        // Set the table model to display the fetched food data, converting the ResultSet to a table format
         tableFood.setModel(DbUtils.resultSetToTableModel(result));
+
+        // Clear any cached data from the food database after fetching the food items
         foodDb.flushAll();
     }
-     
-     private void populateItemTable()
-     {
+
+    // Method to populate the item table with data from the item database
+    private void populateItemTable() {
+        // Fetch the list of items from the item database
         result = itemDb.getItems();
+
+        // Set the table model to display the fetched item data, converting the ResultSet to a table format
         tableItem.setModel(DbUtils.resultSetToTableModel(result));
+
+        // Clear any cached data from the item database after fetching the items
         itemDb.flushAll();
-     }
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -365,11 +390,15 @@ public class OrderPanel extends javax.swing.JDialog {
         tfPrice.setText(tableFood.getModel().getValueAt(row, 2)+"");
        
     }
-     private void displayToTextFieldFromItem(int row) {
-        tfFoodItem.setText(tableItem.getModel().getValueAt(row, 1)+"");
-        tfPrice.setText(tableItem.getModel().getValueAt(row, 2)+"");
-       
+    // Method to display selected item details from the item table to the corresponding text fields
+    private void displayToTextFieldFromItem(int row) {
+        // Set the 'Food Item' text field with the value from column 1 of the selected row
+        tfFoodItem.setText(tableItem.getModel().getValueAt(row, 1) + "");
+
+        // Set the 'Price' text field with the value from column 2 of the selected row
+        tfPrice.setText(tableItem.getModel().getValueAt(row, 2) + "");
     }
+
     /**
      * @param args the command line arguments
      */

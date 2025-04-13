@@ -47,18 +47,29 @@ public class ItemPanel extends javax.swing.JDialog {
        
     }
 
+    // Method to create and populate an Item object with data from text fields
     private void itemObjectCreation() {
+        // Create a new Item instance
         item = new Item();
+
+        // Set the item's name using the value from the name text field
         item.setItemName(tfItemName.getText());
+
+        // Set the item's description from the corresponding text field
         item.setDescription(tfItemDesc.getText());
+
+        // Set the item's price by parsing the value from the price text field
         item.setPrice(Integer.parseInt(tfItemPrice.getText()));
 
         try {
+            // Attempt to parse and set the item's ID from the item ID text field
             item.setItemId(Integer.parseInt(tfItemId.getText()));
         } catch (Exception ex) {
+            // If parsing fails (e.g., the field is empty or not a number), set the ID to -1 as a default
             item.setItemId(-1);
         }
     }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -241,13 +252,21 @@ public class ItemPanel extends javax.swing.JDialog {
     }
 
 
+    // Event handler for the "Add" button click
     private void btn_addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_addActionPerformed
+        // Step 1: Create an Item object using data from text fields
         itemObjectCreation();
-        db.insertItem(item);
-        populateFoodTable();
-        clearAllFields();
 
+        // Step 2: Insert the new item into the database
+        db.insertItem(item);
+
+        // Step 3: Refresh the food table to show the newly added item
+        populateFoodTable();
+
+        // Step 4: Clear all input fields for the next entry
+        clearAllFields();
     }//GEN-LAST:event_btn_addActionPerformed
+
 
     private void btn_editActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_editActionPerformed
         itemObjectCreation();
@@ -296,16 +315,23 @@ public class ItemPanel extends javax.swing.JDialog {
         btnDelete.setEnabled(false);
         
     }
-    
-    private void displayToTextFields(int row)
-    {
-        tfItemId.setText(table_item.getModel().getValueAt(row, 0)+"");
-        tfItemName.setText( table_item.getModel().getValueAt(row, 1)+"");
-        tfItemDesc.setText(table_item.getModel().getValueAt(row, 2)+"");
-        tfItemPrice.setText(table_item.getModel().getValueAt(row, 3)+"");
-        
+
+    // Method to display the selected row's item details from the table into text fields
+    private void displayToTextFields(int row) {
+        // Set the Item ID field with the value from column 0 (Item ID)
+        tfItemId.setText(table_item.getModel().getValueAt(row, 0) + "");
+
+        // Set the Item Name field with the value from column 1 (Item Name)
+        tfItemName.setText(table_item.getModel().getValueAt(row, 1) + "");
+
+        // Set the Description field with the value from column 2 (Item Description)
+        tfItemDesc.setText(table_item.getModel().getValueAt(row, 2) + "");
+
+        // Set the Price field with the value from column 3 (Item Price)
+        tfItemPrice.setText(table_item.getModel().getValueAt(row, 3) + "");
     }
-    
+
+
 
 
     /**

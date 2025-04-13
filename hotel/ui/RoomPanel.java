@@ -432,30 +432,56 @@ public class RoomPanel extends javax.swing.JDialog {
         }
     
     }
-    
-    private void populateRoomTypeTable()
-    {
-        //System.out.println(tabbedPane.getSelectedIndex());
+
+    // Method to populate the room type table with data from the database
+    private void populateRoomTypeTable() {
+        // Uncommented for debugging: Outputs the selected index of the tab in the tabbed pane
+        // System.out.println(tabbedPane.getSelectedIndex());
+
+        // Fetch the list of room types from the database
         result = roomdb.getRoomType();
+
+        // Set the table model with the data fetched from the database,
+        // converting the ResultSet to a table model that the table can display
         tableRoomType.setModel(DbUtils.resultSetToTableModel(result));
+
+        // Clear any cached data from the database after fetching the room types
         roomdb.flushAll();
     }
-    
-    private void populateRoomTable()
-    {
+
+
+    // Method to populate the room table with data from the database
+    private void populateRoomTable() {
+        // Fetch the list of rooms from the database
         result = roomdb.getRooms();
+
+        // Set the table model with the data fetched from the database,
+        // converting the ResultSet to a table model that the table can display
         tableRooms.setModel(DbUtils.resultSetToTableModel(result));
+
+        // Clear any cached data from the database after fetching the rooms
         roomdb.flushAll();
     }
-    
-    private void tf_priceKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tf_priceKeyTyped
+
+
+    /**
+     * Ensures only numeric input (digits) is allowed in the price text field.
+     *
+     * This method is triggered whenever a key is typed in the tf_price field.
+     * It allows only digits, backspace, and delete keys.
+     * Any other character input is consumed (ignored).
+     *
+     * @param evt The KeyEvent triggered by typing into the tf_price field.
+     */
+    private void tf_priceKeyTyped(java.awt.event.KeyEvent evt) {
         char c = evt.getKeyChar();
-        
-        if(!(Character.isDigit(c) || c== KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE ))
-        {
-            evt.consume();
+
+        // Allow only digits, backspace, and delete
+        if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+            evt.consume(); // Ignore invalid input
         }
-    }//GEN-LAST:event_tf_priceKeyTyped
+    }
+
 
     private void btn_addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_addActionPerformed
        
@@ -530,106 +556,180 @@ public class RoomPanel extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_check_wifiActionPerformed
 
-    private void clearRoomPanel()
-    {
-        
+    /**
+     * Clears all input fields and resets the room panel to its default state.
+     *
+     * This method is typically called when the user wants to add a new room,
+     * cancel editing, or after a successful operation (insert/delete).
+     * It resets the form, disables edit/delete buttons, and enables the Add button.
+     */
+    private void clearRoomPanel() {
+        // Reset the Room object
         room = new Room(null);
+
+        // Clear all text fields
         tfBeds.setText("");
         tfPrice.setText("");
         tfRoomID.setText("");
         tfRoomNo.setText("");
         tf_roomType.setText("");
+
+        // Clear selection from room table
         tableRooms.clearSelection();
+
+        // Uncheck all feature checkboxes
         checkGizer.setSelected(false);
         checkPhone.setSelected(false);
         checkTv.setSelected(false);
         checkWifi.setSelected(false);
+
+        // Reset combo box to first item
         comboRoomType.setSelectedIndex(0);
-        
+
+        // Enable Add button; disable Edit and Delete
         btnAdd.setEnabled(true);
         btnEdit.setEnabled(false);
         btnDelete.setEnabled(false);
-        
-        
-        
-        
     }
-    
-    private void clearRoomTypePanel()
-    {
-        roomType = new RoomFare();
-        tf_roomType.setText("");
-        tfPrice.setText("");
-        btnAddRoomType.setEnabled(true);
-        btnEditRoomType.setEnabled(false);
-        btnDeleteRoomType.setEnabled(false);
+
+
+
+
+    /**
+     * Populates room-related text fields and checkboxes based on the selected row
+     * in the tableRooms JTable.
+     *
+     * Retrieves values such as room ID, number, amenities (TV, WiFi, etc.),
+     * and room type from the selected row and displays them in their corresponding
+     * UI components.
+     *
+     * @param row The index of the selected row in the table.
+     */
+    private void displayToRoomTextField(int row) {
+        var model = tableRooms.getModel();
+
+        // Optional: guard clause for invalid row index
+        if (row < 0 || row >= model.getRowCount()) return;
+
+        tfRoomID.setText(String.valueOf(model.getValueAt(row, 0)));
+        tfRoomNo.setText(String.valueOf(model.getValueAt(row, 1)));
+        tfBeds.setText(String.valueOf(model.getValueAt(row, 2)));
+
+        // Set checkbox states based on boolean string values from the table
+        checkTv.setSelected(Boolean.parseBoolean(String.valueOf(model.getValueAt(row, 3))));
+        checkWifi.setSelected(Boolean.parseBoolean(String.valueOf(model.getValueAt(row, 4))));
+        checkGizer.setSelected(Boolean.parseBoolean(String.valueOf(model.getValueAt(row, 5))));
+        checkPhone.setSelected(Boolean.parseBoolean(String.valueOf(model.getValueAt(row, 6))));
+
+        // Set the combo box to the correct room type
+        String roomType = String.valueOf(model.getValueAt(row, 7));
+        comboRoomType.setSelectedIndex(getComboSearchIndex(roomType));
     }
-    
-    private void displayToRoomTextField(int row)
-    {
-       // for(int i=0; comboRoomType.)
-        tfRoomID.setText(tableRooms.getModel().getValueAt(row, 0)+"");
-        tfRoomNo.setText(tableRooms.getModel().getValueAt(row, 1)+"");
-        tfBeds.setText(tableRooms.getModel().getValueAt(row, 2)+"");
-        checkTv.setSelected((tableRooms.getModel().getValueAt(row, 3)+"").equals("true") ? true:false);
-        checkWifi.setSelected((tableRooms.getModel().getValueAt(row, 4)+"").equals("true") ? true:false);
-        checkGizer.setSelected((tableRooms.getModel().getValueAt(row, 5)+"").equals("true") ? true:false);
-        checkPhone.setSelected((tableRooms.getModel().getValueAt(row, 6)+"").equals("true") ? true:false);
-        int selectedIndex = getComboSearchIndex(tableRooms.getModel().getValueAt(row, 7)+"");  
-        comboRoomType.setSelectedIndex(selectedIndex);
-        //tv,wifi,gizer,phone
-        //value ? "true" : "false";
-        
+
+
+    /**
+     * Populates the text fields for room type and price based on the selected row
+     * from the tableRoomType JTable.
+     *
+     * @param row The index of the selected row in the table.
+     */
+    private void displayToTextField(int row) {
+        var model = tableRoomType.getModel();
+
+        // Set the room type name from column 0
+        tf_roomType.setText(String.valueOf(model.getValueAt(row, 0)));
+
+        // Set the room price from column 1
+        tfPrice.setText(String.valueOf(model.getValueAt(row, 1)));
     }
-      private void displayToTextField(int row) {
-          tf_roomType.setText(tableRoomType.getModel().getValueAt(row, 0)+"");
-          tfPrice.setText(tableRoomType.getModel().getValueAt(row, 1)+"");
-          
+
+
+    /**
+     * Returns the index of the given item in the roomClass list.
+     *
+     * Used to match a string value (e.g., "Deluxe", "Suite") to the correct index
+     * for setting a selected item in a combo box.
+     *
+     * @param item The string to search for in the roomClass list.
+     * @return The index of the item if found, otherwise -1.
+     */
+    private int getComboSearchIndex(String item) {
+        // Defensive check: avoid NullPointerException if item is null
+        if (item == null) return -1;
+
+        for (int i = 0; i < roomClass.size(); i++) {
+            if (item.equals(roomClass.get(i))) {
+                return i;
+            }
         }
-      
-      private int getComboSearchIndex(String item)
-      {
-          for( int i=0;i<roomClass.size() ; i++)
-          {
-              if(item.equals(roomClass.get(i)))
-              {
-                  return i;
-              }
-          }
-          return -1;
-      }
-    
-    private void roomObjectCreation()
-    {
-        // ************************************** null add korsi "" er jaygay  *********************
+
+        return -1; // Not found
+    }
+
+
+    /**
+     * Initializes a Room object based on user input from the UI.
+     *
+     * This method populates all relevant fields of a Room, including bed count,
+     * available amenities (TV, WiFi, Geyser, Phone), and its RoomFare (type).
+     * If the Room ID input is not a valid integer, a default ID of -1 is used.
+     */
+    private void roomObjectCreation() {
+        // Creates a Room with a null initial ID (presumably to be set later)
         room = new Room(null);
-        room.setRoomNo(tfRoomNo.getText());
-        room.setBedNumber(Integer.parseInt(tfBeds.getText()));
+
+        // Set the room number and number of beds from text fields
+        room.setRoomNo(tfRoomNo.getText().trim());
+
+        try {
+            room.setBedNumber(Integer.parseInt(tfBeds.getText().trim()));
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Invalid bed number. Please enter a number.");
+        }
+
+        // Set boolean options from checkboxes
         room.setHasTV(checkTv.isSelected());
         room.setHasWIFI(checkWifi.isSelected());
         room.setHasGizer(checkGizer.isSelected());
         room.setHasPhone(checkPhone.isSelected());
-        
-        // setting the inner object of RoomType
-        
-        room.setRoomClass(new RoomFare());
-        room.getRoomClass().setRoomType(comboRoomType.getSelectedItem().toString());
-        
-        try
-        {
-            room.setRoomId(Integer.parseInt(tfRoomID.getText()));
-        }
-        catch(Exception ex)
-        {
-            room.setRoomId(-1);
+
+        // Set the RoomFare (type) from the combo box
+        RoomFare fare = new RoomFare();
+        fare.setRoomType(comboRoomType.getSelectedItem().toString());
+        room.setRoomClass(fare);
+
+        // Attempt to parse and set Room ID; if fails, use -1
+        try {
+            room.setRoomId(Integer.parseInt(tfRoomID.getText().trim()));
+        } catch (NumberFormatException ex) {
+            room.setRoomId(-1); // Indicates that room ID is not provided or invalid
         }
     }
-    private void roomTypeObjectCreation()
-    {
-        roomType = new RoomFare();
-        roomType.setRoomType(tf_roomType.getText());
-        roomType.setPricePerDay(Integer.parseInt(tfPrice.getText()));
+
+    /**
+     * Initializes a RoomFare object (roomType) based on user input from the UI.
+     *
+     * This method retrieves the room type name and its price per day
+     * from the corresponding text fields, and populates the `roomType` object.
+     *
+     * Assumes that:
+     * - tf_roomType contains a valid room type name (e.g., "Deluxe")
+     * - tfPrice contains a valid integer price (e.g., "150")
+     */
+    private void roomTypeObjectCreation() {
+        roomType = new RoomFare(); // Create a new RoomFare instance
+
+        roomType.setRoomType(tf_roomType.getText().trim()); // Set the type (trimmed for safety)
+
+        // Convert price input from string to int and set it
+        try {
+            int price = Integer.parseInt(tfPrice.getText().trim());
+            roomType.setPricePerDay(price);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Invalid price. Please enter a valid number.");
+        }
     }
+
     /**
      * @param args the command line arguments
      */

@@ -78,7 +78,7 @@ public class Booking {
         this.person = person;
     }
 
-    public ArrayList<Room> getRooms() {
+    public List<Room> getRooms() {
         return rooms;
     }
     

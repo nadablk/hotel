@@ -214,83 +214,91 @@ public class PaymentPanel extends javax.swing.JDialog {
 
     }//GEN-LAST:event_table_paymentPropertyChange
 
-    private void updateTotalCheckBox() {
-        int total = 0;
-        int rows = tablePayment.getRowCount();
-        //int selectedUserId = (int) table_customer.getModel().getValueAt(row, 0);
 
-        try {
-            for (int i = 0; i < rows; i++) {
-                total += (int) tablePayment.getModel().getValueAt(i, 5);
-            }
-            tf_total.setText(total + "");
-        } catch (ClassCastException ex) {
-            System.err.println("waiting for a int value");
-        }
 
-    }
-
+    // Method to populate the payment table with data from the given ResultSet
     private void populatePaymentTable(ResultSet result) {
-
+        // Set the table model to display the data from the ResultSet, converting it to a table format
         tablePayment.setModel(DbUtils.resultSetToTableModel(result));
     }
 
-    public void bookingComboFill(ResultSet result) {
-        bookingList.clear();
-        try {
 
+    // Method to populate the booking comboBox with data from the given ResultSet
+    public void bookingComboFill(ResultSet result) {
+        // Clear the existing items in the bookingList to prepare for new data
+        bookingList.clear();
+
+        try {
+            // Iterate through the ResultSet and process each row
             while (result.next()) {
-                // System.out.println(">>>>>> "+result.getString("name"));
-                bookingList.add(result.getString("booking_room") + ", " + result.getString("name") + "," + result.getString("booking_id"));
+                // Create a string by concatenating booking room, name, and booking ID
+                String bookingDetails = result.getString("booking_room") + ", " + result.getString("name") + "," + result.getString("booking_id");
+
+                // Add the formatted booking details to the bookingList
+                bookingList.add(bookingDetails);
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "bookingCombo fill error");
+            // If an error occurs while processing the ResultSet, show an error message
+            JOptionPane.showMessageDialog(null, "Error filling booking comboBox");
         }
-
     }
 
+
+    // Method to set up a search helper for the comboBox that listens to key events
     public void searchHelper() {
+        // Create a DefaultComboBoxModel using the bookingList and set it to the comboBooking
         final DefaultComboBoxModel model = new DefaultComboBoxModel(bookingList);
         comboBooking.setModel(model);
 
+        // Get the editor component of the comboBox (the text field)
         JTextComponent editor = (JTextComponent) comboBooking.getEditor().getEditorComponent();
+
+        // Add a key listener to the editor component to listen for key events
         editor.addKeyListener(new KeyAdapter() {
 
+            // This method is triggered when a key is typed
             @Override
             public void keyTyped(KeyEvent evt) {
 
+                // Check if the ENTER key is pressed
                 if (evt.getKeyChar() == KeyEvent.VK_ENTER) {
+                    // Get the selected item (booking details) from the comboBox
                     String details = (String) comboBooking.getSelectedItem();
-                    //System.out.println(details);
+
+                    // Check if the booking details contain a comma (which indicates a valid booking)
                     if (!details.contains(",")) {
-                        JOptionPane.showMessageDialog(null, "no booking found, try adding a new booking");
+                        // If no comma, display a message indicating no booking was found
+                        JOptionPane.showMessageDialog(null, "No booking found, try adding a new booking");
                     } else {
+                        // Extract the booking ID by parsing the part after the last comma in the details
                         bookingId = Integer.parseInt(details.substring(details.lastIndexOf(",") + 1));
-                        //tf_bookingId.setText(bookinId+"");
-                        // A if condition should be here, but not required as the last line has no chance of returning -1.
-
+                        // Optionally, you could set the bookingId to a text field or perform further operations
+                        // tf_bookingId.setText(bookingId+"");
+                        // An 'if' condition could be added here, but it's not required as the last line cannot return -1.
                     }
-
                 }
 
-                /// suggestion generation
+                // Suggestion generation for the comboBox based on the typed value
                 String value = "";
                 try {
+                    // Get the current text in the comboBox editor (what the user typed)
                     value = comboBooking.getEditor().getItem().toString();
-                    // System.out.println(value +" <<<<<<<<<<<<<");
-
+                    // System.out.println(value +" <<<<<<<<<<<<<"); // Debugging statement
                 } catch (Exception ex) {
+                    // Handle any exceptions silently (could be logging or error handling here)
                 }
+
+                // If the value length is 2 or more, fetch matching bookings and update the comboBox
                 if (value.length() >= 2) {
-
-                    // System.out.println("working");
+                    // System.out.println("working"); // Debugging statement
+                    // Fetch bookings ready for order based on the current text and update the comboBox
                     bookingComboFill(bookingdB.bookingsReadyForOrder(value));
-                    // bookingdB.flushAll();
+                    // Optional: bookingdB.flushAll(); // If necessary, flush all data from the booking database
                 }
-
             }
         });
     }
+
 
     /**
      * @param args the command line arguments
