@@ -9,12 +9,25 @@ import javax.swing.JOptionPane;
 import I3.DatabaseOperation.DataBaseConnection;
 import hotel.classes.UserInfo;
 
+/**
+ * Handles database operations for customer information and related functionalities.
+ * This class provides methods to insert, update, delete, and retrieve customer data.
+ */
 public class DatabaseOperation {
 
+    // Establishing the connection to the database
     Connection conn = DataBaseConnection.connectTODB();
+
+    // PreparedStatement to execute SQL queries
     PreparedStatement statement = null;
+
+    // ResultSet to store the results from SELECT queries
     ResultSet result = null;
 
+    /**
+     * Inserts a new customer record into the database.
+     * @param user The user information to insert into the database (name, address, phone, type).
+     */
     public void insertCustomer(UserInfo user) {
         try {
             String insertQuery = "INSERT INTO userInfo (name, address, phone, type) VALUES (?, ?, ?, ?)";
@@ -34,6 +47,10 @@ public class DatabaseOperation {
         }
     }
 
+    /**
+     * Updates an existing customer record based on the customer ID.
+     * @param user The updated user information (must contain a valid customerId).
+     */
     public void updateCustomer(UserInfo user) {
         try {
             String updateQuery = "UPDATE userInfo SET name = ?, address = ?, phone = ?, type = ? WHERE user_id = ?";
@@ -53,6 +70,10 @@ public class DatabaseOperation {
         }
     }
 
+    /**
+     * Deletes a customer record based on the user ID.
+     * @param userId The ID of the user to delete.
+     */
     public void deleteCustomer(int userId) {
         try {
             String deleteQuery = "DELETE FROM userInfo WHERE user_id = ?";
@@ -67,6 +88,10 @@ public class DatabaseOperation {
         }
     }
 
+    /**
+     * Retrieves all customer records from the database.
+     * @return A ResultSet containing all customer data.
+     */
     public ResultSet getAllCustomer() {
         try {
             String query = "SELECT * FROM userInfo";
@@ -78,6 +103,11 @@ public class DatabaseOperation {
         return result;
     }
 
+    /**
+     * Searches for customers by name.
+     * @param user The partial or full name of the user to search for.
+     * @return A ResultSet containing matching customer records.
+     */
     public ResultSet searchUser(String user) {
         try {
             String query = "SELECT user_id, name, address FROM userInfo WHERE name LIKE ?";
@@ -90,6 +120,11 @@ public class DatabaseOperation {
         return result;
     }
 
+    /**
+     * Searches for a specific customer by their unique ID.
+     * @param id The ID of the customer to search for.
+     * @return A ResultSet containing the matching customer record.
+     */
     public ResultSet searchAnUser(int id) {
         try {
             String query = "SELECT * FROM userInfo WHERE user_id = ?";
@@ -102,6 +137,11 @@ public class DatabaseOperation {
         return result;
     }
 
+    /**
+     * Retrieves available rooms based on the check-in time.
+     * @param checkInTime The check-in time to compare with room booking times.
+     * @return A ResultSet containing available room numbers.
+     */
     public ResultSet getAvailableRooms(long checkInTime) {
         try {
             String query = "SELECT room_no FROM room LEFT OUTER JOIN booking ON room.room_no = booking.booking_room " +
@@ -117,6 +157,13 @@ public class DatabaseOperation {
         return result;
     }
 
+    /**
+     * Retrieves booking information for a specific room and date range.
+     * @param startDate The start date of the booking range.
+     * @param endDate The end date of the booking range.
+     * @param roomNo The room number to check booking status for.
+     * @return A ResultSet containing booking information.
+     */
     public ResultSet getBookingInfo(long startDate, long endDate, String roomNo) {
         try {
             String query = "SELECT * FROM booking WHERE booking_room = ? AND (" +
@@ -138,6 +185,11 @@ public class DatabaseOperation {
         return result;
     }
 
+    /**
+     * Retrieves the customer ID based on the name and phone number of the user.
+     * @param user The user object containing the name and phone number to search.
+     * @return The customer ID if found, or -1 if no matching customer is found.
+     */
     public int getCustomerId(UserInfo user) {
         int id = -1;
         try {
@@ -158,6 +210,10 @@ public class DatabaseOperation {
         return id;
     }
 
+    /**
+     * Closes the PreparedStatement and ResultSet to free up database resources.
+     * Use this when you're done using the database resources.
+     */
     public void flushAll() {
         try {
             if (statement != null) statement.close();
@@ -167,6 +223,9 @@ public class DatabaseOperation {
         }
     }
 
+    /**
+     * Closes the PreparedStatement only, used when no ResultSet is involved.
+     */
     private void flushStatmentOnly() {
         try {
             if (statement != null) statement.close();

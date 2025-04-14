@@ -8,12 +8,25 @@ import javax.swing.JOptionPane;
 
 import hotel.classes.Food;
 
+/**
+ * Handles database operations related to food items.
+ * This includes inserting, retrieving, updating, and deleting records from the 'food' table.
+ */
 public class FoodDb {
 
+    // Establishes connection with the database
     Connection conn = DataBaseConnection.connectTODB();
+
+    // Used for executing SQL statements
     PreparedStatement statement = null;
+
+    // Used to store the result set returned from a SELECT query
     ResultSet result = null;
 
+    /**
+     * Inserts a new food item into the database using a prepared statement.
+     * @param food The food item object to insert (must have name and price set)
+     */
     public void insertFood(Food food) {
         try {
             String insertFood = "INSERT INTO food (name, price) VALUES (?, ?)";
@@ -22,7 +35,6 @@ public class FoodDb {
             statement.setDouble(2, food.getPrice());
 
             statement.execute();
-
             JOptionPane.showMessageDialog(null, "Successfully inserted a new food item");
 
         } catch (SQLException ex) {
@@ -32,6 +44,10 @@ public class FoodDb {
         }
     }
 
+    /**
+     * Retrieves all food items from the database.
+     * @return A ResultSet containing all food rows.
+     */
     public ResultSet getFoods() {
         try {
             String query = "SELECT * FROM food";
@@ -40,10 +56,13 @@ public class FoodDb {
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, ex.toString() + "\nError retrieving food data");
         }
-
         return result;
     }
 
+    /**
+     * Updates an existing food item in the database using its food_id.
+     * @param food The updated food object. Must contain a valid foodId.
+     */
     public void updateFood(Food food) {
         try {
             String updateFood = "UPDATE food SET name = ?, price = ? WHERE food_id = ?";
@@ -53,7 +72,6 @@ public class FoodDb {
             statement.setInt(3, food.getFoodId());
 
             statement.execute();
-
             JOptionPane.showMessageDialog(null, "Successfully updated food");
 
         } catch (SQLException ex) {
@@ -63,6 +81,10 @@ public class FoodDb {
         }
     }
 
+    /**
+     * Deletes a food item from the database using its ID.
+     * @param foodId The unique ID of the food to be deleted.
+     */
     public void deleteFood(int foodId) {
         try {
             String deleteQuery = "DELETE FROM food WHERE food_id = ?";
@@ -70,7 +92,6 @@ public class FoodDb {
             statement.setInt(1, foodId);
 
             statement.execute();
-
             JOptionPane.showMessageDialog(null, "Deleted food");
 
         } catch (SQLException ex) {
@@ -80,6 +101,10 @@ public class FoodDb {
         }
     }
 
+    /**
+     * Closes both PreparedStatement and ResultSet to free database resources.
+     * Use this when both are no longer needed.
+     */
     public void flushAll() {
         try {
             if (statement != null) statement.close();
@@ -89,6 +114,10 @@ public class FoodDb {
         }
     }
 
+    /**
+     * Closes only the PreparedStatement object.
+     * Use this when only statements were used (no ResultSet).
+     */
     private void flushStatmentOnly() {
         try {
             if (statement != null) statement.close();
